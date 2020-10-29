@@ -589,35 +589,3 @@ class ProductProduct(models.Model):
             self[:1].check_config_user_access(mode='write')
 
         return super(ProductProduct, self).write(vals)
-
-    def name_get(self):
-        res_total = []
-        for product in self.sudo():
-            res = super(ProductProduct, product).name_get()[0]
-            res_name = res[1]
-            if product.value_custom_ids:
-                custom_value = product._get_custom_values_name()
-                # Check if product has standard variant to include custom value
-                # with them
-                variant = product.product_template_attribute_value_ids.\
-                    _get_combination_name()
-                if variant:
-                    split_name = res_name.rsplit(')', 1)
-                    start_name = split_name[:-1][0] or ""
-                    end_name = split_name[:0] or ""
-                    name = f"{start_name}, {custom_value}){end_name}"
-                else:
-                    name = f"({custom_value})"
-                res = (product.id, name)
-            res_total.append(res)
-        return res_total
-
-    def _get_custom_values_name(self):
-        custom_value = ""
-        i = 0
-        for custom_val in self.value_custom_ids:
-            if i > 0:
-                custom_value += ", "
-            custom_value += f"{custom_val.attribute_id.name}: {custom_val.name}"
-            i += 1
-        return custom_value
